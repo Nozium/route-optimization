@@ -1,0 +1,32 @@
+---
+name: test
+
+on:
+  push:
+    branches:
+      - "main"
+    tags:
+      - 'v*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run test workflow
+        run : echo
+      - name: Check branch
+        id: check_branch
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ];then
+            echo "main=true" >> $GITHUB_OUTPUT
+          else
+            echo "main=false" >> $GITHUB_OUTPUT
+          fi
+      - uses: convictional/trigger-workflow-and-wait@v1.6.5
+        with:
+          owner: rcmdnk
+          repo: python-action-test
+          github_token: ${{ secrets.PYTHON_ACTION_TEST_TOKEN }}
+          workflow_file_name: test.yml
+          propagate_failure: true
+          client_payload: "{\"head_python_action\": \"${{ steps.check_branch.outputs.main }}\"}"
